@@ -20,7 +20,8 @@ class FileService {
     final description = descriptionController.text;
     final tags = tagsController.text;
 
-    final textContent = "Title:\n\n$title\n\nDescription:\n\n$description\n\nTags:\n\n$tags";
+    final textContent =
+        "Title:\n\n$title\n\nDescription:\n\n$description\n\nTags:\n\n$tags";
 
     try {
       if (_selectedFile != null) {
@@ -37,11 +38,18 @@ class FileService {
         final filePath = '$metadataDirPath/$todayDate - $title - Metadata.txt';
         final newFile = File(filePath);
         await newFile.writeAsString(textContent);
-
       }
-      SnackbarUtils.showSnackbar(context, Icons.vape_free, 'File saved successfully');
+      SnackbarUtils.showSnackbar(
+        context,
+        Icons.vape_free,
+        'File saved successfully',
+      );
     } catch (e) {
-      SnackbarUtils.showSnackbar(context, Icons.error, 'An error occurred while saving file.');
+      SnackbarUtils.showSnackbar(
+        context,
+        Icons.error,
+        'An error occurred while saving file.',
+      );
     }
   }
 
@@ -50,10 +58,47 @@ class FileService {
       FilePickerResult? result = await FilePicker.platform.pickFiles();
 
       if (result != null) {
-        
+        File file = File(result.files.single.path!);
+        _selectedFile = file;
+
+        final fileContent = await file.readAsString();
+
+        final lines = fileContent.split('\n\n');
+        titleController.text = lines[1];
+        descriptionController.text = lines[3];
+        tagsController.text = lines[5];
+
+        SnackbarUtils.showSnackbar(context, Icons.upload_file, 'File uploaded');
+      } else {
+        SnackbarUtils.showSnackbar(context, Icons.error_rounded, 'No file selected');
       }
     } catch (e) {
-      SnackbarUtils.showSnackbar(context, Icons.vape_free_sharp, 'No file selected');
+      SnackbarUtils.showSnackbar(
+        context,
+        Icons.vape_free_sharp,
+        'No file selected',
+      );
+    }
+  }
+
+  void newFile(context) {
+    _selectedFile = null;
+    titleController.clear();
+    descriptionController.clear();
+    tagsController.clear();
+
+    SnackbarUtils.showSnackbar(context, Icons.file_upload, 'New file created');
+  }
+
+  void newDirectory(context) async {
+    try {
+      String? directory = await FilePicker.platform.getDirectoryPath();
+      _selectedDirectory = directory!;
+      _selectedFile = null;
+
+      SnackbarUtils.showSnackbar(context, Icons.folder, 'Folder selected');
+    } catch (e) {
+      SnackbarUtils.showSnackbar(context, Icons.error_rounded, 'No folder selected');
     }
   }
 
